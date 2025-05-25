@@ -573,120 +573,33 @@
         @keyframes float {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
             33% { transform: translate(10px, -10px) rotate(1deg); }
-            66% { transform: translate(-5px, 5px) rotate(-1deg); }
-        }        /* Mouse cursor effects */
-        .cursor {
+            66% { transform: translate(-5px, 5px) rotate(-1deg); }        }
+
+        /* Custom translucent white circle cursor */
+        .custom-cursor {
             position: fixed;
             width: 20px;
             height: 20px;
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.8), rgba(139, 92, 246, 0.4));
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.6);
             border-radius: 50%;
             pointer-events: none;
-            z-index: 9998;
+            z-index: 9999;
             transform: translate(-50%, -50%);
-            transition: all 0.1s ease;
+            transition: all 0.15s ease;
             mix-blend-mode: difference;
         }
 
-        .cursor-trail {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: rgba(79, 70, 229, 0.6);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9997;
-            transform: translate(-50%, -50%);
-            animation: fadeOut 0.8s ease-out forwards;
-        }
-
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0);
-            }
-        }
-
-        /* Cursor states */
-        .cursor.cursor-hover {
+        .custom-cursor.hover {
             width: 40px;
             height: 40px;
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.3), transparent);
-            border: 2px solid rgba(79, 70, 229, 0.8);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.8);
         }
 
-        .cursor.cursor-click {
-            animation: clickPulse 0.3s ease-out;
-        }
-
-        @keyframes clickPulse {
-            0% {
-                transform: translate(-50%, -50%) scale(1);
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.5);
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-
-        /* Interactive particles */
-        .particle {
-            position: fixed;
-            pointer-events: none;
-            z-index: 9996;
-            border-radius: 50%;
-            animation: particleFloat 2s ease-out forwards;
-        }
-
-        @keyframes particleFloat {
-            0% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(0);
-            }
-            50% {
-                opacity: 0.7;
-                transform: translate(-50%, -50%) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0) translateY(-100px);
-            }
-        }
-
-        /* Hover effects for interactive elements */
-        .nav-button, .scroll-top, .nav-logo {
-            cursor: none;
-        }
-
-        /* Hide default cursor on interactive elements */
+        /* Hide default cursor */
         body, a, button {
             cursor: none;
-        }
-
-        /* Mouse ripple effect */
-        .mouse-ripple {
-            position: fixed;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.2), transparent);
-            pointer-events: none;
-            z-index: 9995;
-            transform: translate(-50%, -50%);
-            animation: rippleExpand 0.6s ease-out forwards;
-        }
-
-        @keyframes rippleExpand {
-            0% {
-                width: 0;
-                height: 0;
-                opacity: 0.8;
-            }
-            100% {
-                width: 200px;
-                height: 200px;
-                opacity: 0;
-            }
         }
 
         /* Reduced motion for accessibility */
@@ -699,6 +612,14 @@
                 transition-duration: 0.01ms !important;
             }
             
+            .custom-cursor {
+                display: none !important;
+            }
+
+            body, a, button {
+                cursor: auto !important;
+            }
+
             .scroll-reveal,
             .scroll-reveal-left,
             .scroll-reveal-right,
@@ -707,20 +628,8 @@
                 transform: none;
                 transition: none;
             }
-            
-            body::before {
+              body::before {
                 animation: none;
-            }
-
-            .cursor,
-            .cursor-trail,
-            .particle,
-            .mouse-ripple {
-                display: none !important;
-            }
-
-            body, a, button {
-                cursor: auto !important;
             }
         }
     </style>
@@ -729,8 +638,10 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- Custom cursor -->
-    <div class="cursor" id="cursor"></div><nav class="nav-container" role="navigation" aria-label="Main navigation">
+    <!-- Custom translucent white circle cursor -->
+    <div class="custom-cursor" id="customCursor"></div>
+
+    <nav class="nav-container" role="navigation" aria-label="Main navigation">
         <div class="nav-content">
             <a href="#" class="nav-logo" aria-label="Resume homepage">
                 <i class="fas fa-user-tie" aria-hidden="true"></i>
@@ -859,13 +770,11 @@
             });
         }
 
-        // Mouse effects functionality
-        function initMouseEffects() {
-            const cursor = document.getElementById('cursor');
+        // Custom cursor functionality
+        function initCustomCursor() {
+            const cursor = document.getElementById('customCursor');
             let mouseX = 0, mouseY = 0;
             let cursorX = 0, cursorY = 0;
-            const trails = [];
-            let particleId = 0;
 
             // Check if reduced motion is preferred
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -875,14 +784,6 @@
             document.addEventListener('mousemove', (e) => {
                 mouseX = e.clientX;
                 mouseY = e.clientY;
-
-                // Create trail effect
-                createTrail(mouseX, mouseY);
-
-                // Random particle generation
-                if (Math.random() < 0.1) {
-                    createParticle(mouseX, mouseY);
-                }
             });
 
             // Smooth cursor movement
@@ -898,79 +799,17 @@
             }
             updateCursor();
 
-            // Create trail particles
-            function createTrail(x, y) {
-                const trail = document.createElement('div');
-                trail.className = 'cursor-trail';
-                trail.style.left = x + 'px';
-                trail.style.top = y + 'px';
-                document.body.appendChild(trail);
-
-                setTimeout(() => {
-                    trail.remove();
-                }, 800);
-            }
-
-            // Create floating particles
-            function createParticle(x, y) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-                
-                const size = Math.random() * 6 + 2;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-                
-                const colors = [
-                    'rgba(79, 70, 229, 0.6)',
-                    'rgba(139, 92, 246, 0.6)',
-                    'rgba(59, 130, 246, 0.6)',
-                    'rgba(16, 185, 129, 0.6)'
-                ];
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-                
-                document.body.appendChild(particle);
-
-                setTimeout(() => {
-                    particle.remove();
-                }, 2000);
-            }
-
-            // Create ripple effect on click
-            function createRipple(x, y) {
-                const ripple = document.createElement('div');
-                ripple.className = 'mouse-ripple';
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
-                document.body.appendChild(ripple);
-
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
-            }
-
             // Hover effects for interactive elements
-            const interactiveElements = document.querySelectorAll('a, button, .nav-button, .scroll-top');
+            const interactiveElements = document.querySelectorAll('a, button, .nav-button, .scroll-top, .nav-toggle');
             
             interactiveElements.forEach(element => {
                 element.addEventListener('mouseenter', () => {
-                    cursor.classList.add('cursor-hover');
+                    cursor.classList.add('hover');
                 });
                 
                 element.addEventListener('mouseleave', () => {
-                    cursor.classList.remove('cursor-hover');
+                    cursor.classList.remove('hover');
                 });
-            });
-
-            // Click effects
-            document.addEventListener('mousedown', (e) => {
-                cursor.classList.add('cursor-click');
-                createRipple(e.clientX, e.clientY);
-                
-                setTimeout(() => {
-                    cursor.classList.remove('cursor-click');
-                }, 300);
             });
 
             // Hide cursor when leaving window
@@ -1015,12 +854,13 @@
         });
 
         pdfObject.addEventListener('error', function() {
-            document.getElementById('pdfLoading').innerHTML = 'Unable to load PDF. <a href="RESUME_OP_VIT.pdf" download>Download instead</a>';
-        });        // Initialize scroll animations when DOM is loaded
+            document.getElementById('pdfLoading').innerHTML = 'Unable to load PDF. <a href="RESUME_OP_VIT.pdf" download>Download instead</a>';        });
+
+        // Initialize scroll animations when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             initScrollAnimations();
             initNavigation();
-            initMouseEffects();
+            initCustomCursor();
         });
 
         // Additional smooth scrolling for better UX
